@@ -1,0 +1,5 @@
+@mixin panel {
+  background: var(--panel-bg);
+  border-radius: 40px;
+  padding: 15px;
+}

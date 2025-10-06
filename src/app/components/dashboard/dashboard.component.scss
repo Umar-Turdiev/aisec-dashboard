@@ -1,0 +1,189 @@
+@use "../../../styles/mixins.scss";
+
+.panel {
+  @include mixins.panel;
+
+  display: grid;
+  gap: 16px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+label {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  opacity: 0.8;
+}
+input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #292929;
+  outline: none;
+}
+input:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+button {
+  padding: 18px 25px;
+  border-radius: 30px;
+  border: 0;
+  background: var(--onyx);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hint {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: #fca5a5;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 15px;
+  background-color: var(--bg2);
+  border-radius: 40px;
+  border: 1.5px solid #f0f0f0;
+}
+
+.card {
+  background: var(--panel-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 25px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--onyx);
+}
+.muted {
+  opacity: 0.7;
+  padding: 12px 14px;
+  color: var(--onyx);
+}
+.error {
+  color: #f87171;
+  padding: 12px 14px;
+}
+
+.log {
+  margin: 0;
+  padding: 12px 14px;
+  min-height: 220px;
+  max-height: 380px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+  line-height: 1.35;
+  border-left: 3px solid transparent;
+  color: var(--onyx);
+}
+.log--active {
+  border-left-color: #6366f1;
+}
+
+.findings {
+  list-style: none;
+  padding: 8px 10px 14px 10px;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  color: white;
+}
+.findings li {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 8px 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+}
+.badge--error {
+  background: rgba(248, 113, 113, 0.15);
+  color: #fecaca;
+}
+.badge--warn {
+  background: rgba(250, 204, 21, 0.15);
+  color: #fde68a;
+}
+
+.rule {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.msg {
+  white-space: pre-wrap;
+}
+.loc {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.errorBanner {
+  margin-top: -4px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+  border-radius: 10px;
+  font-size: 14px;
+}

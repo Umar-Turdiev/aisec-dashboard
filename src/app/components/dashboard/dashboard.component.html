@@ -1,0 +1,66 @@
+<section class="panel">
+  <h1>Repository Scan</h1>
+
+  <form [formGroup]="form" class="row" (ngSubmit)="start()">
+    <label for="repoUrl">Public repo</label>
+    <input
+      id="repoUrl"
+      type="text"
+      formControlName="repoUrl"
+      placeholder="psf/requests or https://github.com/psf/requests"
+    />
+    <button
+      type="submit"
+      [disabled]="phase() === 'starting' || phase() === 'scanning'"
+    >
+      <span *ngIf="phase() === 'starting'">Starting…</span>
+      <span *ngIf="phase() !== 'starting'">Scan now</span>
+    </button>
+  </form>
+
+  <div class="errorBanner" *ngIf="phase() === 'error' && errorText()">
+    {{ errorText() }}
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card__header">
+        <h2>Live logs</h2>
+        <div
+          class="spinner"
+          *ngIf="phase() === 'starting' || phase() === 'scanning'"
+        ></div>
+      </div>
+      <pre
+        class="log"
+        [class.log--active]="phase() === 'scanning' || phase() === 'starting'"
+        >{{ logs().join("\n") }}
+      </pre>
+    </div>
+
+    <div class="card">
+      <div class="card__header">
+        <h2>
+          Results <small>({{ toolName() }})</small>
+        </h2>
+      </div>
+
+      <div class="muted" *ngIf="phase() === 'idle'">
+        Run a scan to see findings.
+      </div>
+
+      <ul class="findings" *ngIf="findings().length">
+        <li *ngFor="let f of findings()">
+          <span [class]="severityBadge(f.level)">{{ f.level ?? "note" }}</span>
+          <code class="rule">{{ f.ruleId ?? "rule" }}</code>
+          <span class="msg">{{ f.message.text || f.message.markdown }}</span>
+          <span class="loc" *ngIf="artifactLoc(f)">{{ artifactLoc(f) }}</span>
+        </li>
+      </ul>
+
+      <div class="muted" *ngIf="phase() === 'completed' && !findings().length">
+        No findings from configured rules.
+      </div>
+    </div>
+  </div>
+</section>
