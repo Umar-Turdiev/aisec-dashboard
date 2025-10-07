@@ -24,6 +24,7 @@ export class DashboardComponent {
   private fb = inject(FormBuilder);
   private scan = inject(ScanService);
   private destroyRef = inject(DestroyRef);
+  private gotAnyLogs = false;
 
   phase = signal<Phase>('idle');
   taskId = signal<string | null>(null);
@@ -44,6 +45,7 @@ export class DashboardComponent {
     this.errorText.set('');
     this.findings.set([]);
     this.taskId.set(null);
+    this.gotAnyLogs = false;
 
     const raw = String(this.form.value.repoUrl || '');
     const normalized = raw.startsWith('http')
@@ -52,15 +54,10 @@ export class DashboardComponent {
 
     this.scan.startScan(normalized).subscribe({
       next: (res) => {
-        const shortId = res.taskId.split('/').pop() || res.taskId;
         this.taskId.set(res.taskId);
-        this.phase.set('completed');
-        this.logs.set([
-          'Task started.',
-          `taskId: ${res.taskId}`,
-          `shortId: ${shortId}`,
-          'Open CloudWatch log group /ecs/aisec-scanner and search by shortId.',
-        ]);
+        this.phase.set('scanning');
+        this.logs.set(['Streaming logs...']);
+        this.streamLogsAndFinish(res.taskId); // <— start polling
       },
       error: (e) => {
         this.phase.set('error');
@@ -77,30 +74,25 @@ export class DashboardComponent {
 
   private streamLogsAndFinish(taskId: string) {
     const sub = this.scan.streamLogs(taskId).subscribe({
-      next: (lines) => this.logs.set(lines.length ? lines : ['(no logs yet)']),
+      next: (lines) => {
+        if (!lines || lines.length === 0) {
+          if (!this.gotAnyLogs) this.logs.set(['(no logs yet)']); // show once
+          return; // keep existing content
+        }
+        if (!this.gotAnyLogs) {
+          this.gotAnyLogs = true;
+          // drop placeholder if present
+          const cur = this.logs();
+          if (cur.length === 1 && cur[0].includes('no log')) this.logs.set([]);
+        }
+        // append new chunk (don’t replace)
+        this.logs.update((v) => v.concat(lines));
+      },
       complete: () => {
-        this.logs.update((v) => [...v, 'Collecting results...']);
-        this.scan.fetchResult(taskId).subscribe({
-          next: (sarif: SarifLog | null) => {
-            if (sarif && sarif.runs?.length) {
-              const run = sarif.runs[0];
-              this.toolName.set(run.tool?.driver?.name ?? 'Semgrep');
-              this.findings.set(run.results ?? []);
-            }
-            this.phase.set('completed');
-            this.logs.update((v) => [...v, 'Done.']);
-          },
-          error: (e) => {
-            this.phase.set('error');
-            const msg = (
-              e?.error?.message ||
-              e?.message ||
-              'Result fetch failed'
-            ).toString();
-            this.errorText.set(msg);
-            this.logs.update((v) => [...v, `Result fetch failed: ${msg}`]);
-          },
-        });
+        this.phase.set('completed');
+        this.logs.update((v) => [...v, 'Done.']);
+        // optional: collapse placeholder-only state
+        if (!this.gotAnyLogs) this.logs.set(['(no logs emitted)']);
       },
       error: (e) => {
         this.phase.set('error');

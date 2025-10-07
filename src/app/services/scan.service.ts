@@ -1,12 +1,26 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import {
+  Observable,
+  interval,
+  map,
+  of,
+  startWith,
+  switchMap,
+  takeWhile,
+} from 'rxjs';
+
 import { environment } from '../../environments/environment';
-import { Observable, of } from 'rxjs';
 
 export interface StartScanResponse {
   taskId: string;
   startedAt: string;
   repo: string;
+}
+export interface LogChunk {
+  lines: string[];
+  end: boolean;
+  cursor?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,10 +38,24 @@ export class ScanService {
     );
   }
 
-  // temporary stubs
-  streamLogs(_: string): Observable<string[]> {
-    return of([]);
+  streamLogs(taskId: string) {
+    let cursor = '';
+    return interval(1200).pipe(
+      startWith(0),
+      switchMap(() => {
+        let params = new HttpParams().set('taskId', taskId);
+        if (cursor) params = params.set('cursor', cursor);
+        return this.http.get<LogChunk>(environment.api.logsUrl, { params }); // no headers, no body
+      }),
+      map((ch) => {
+        cursor = ch.cursor || cursor;
+        return ch;
+      }),
+      takeWhile((ch) => !ch.end, true),
+      map((ch) => ch.lines)
+    );
   }
+
   fetchResult(_: string): Observable<any> {
     return of(null);
   }
