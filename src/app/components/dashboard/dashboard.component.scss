@@ -41,8 +41,8 @@ button {
   padding: 18px 25px;
   border-radius: 30px;
   border: 0;
-  background: var(--onyx);
-  color: #fff;
+  background: var(--fg);
+  color: var(--fg-inverted);
   font-weight: 600;
   cursor: pointer;
 }

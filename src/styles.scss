@@ -1,26 +1,31 @@
-@use './styles/mixins';
-@use './styles/tokens';
+@use "./styles/mixins";
+@use "./styles/tokens";
 
 :root {
-  --ghost-white: #f8f8ff;
-  --oxford-blue: #002147;
-  --oxford-blue-600: #012a5b;
-  --onyx: #2b2b2b;
-  --bg: #f1f1f1;
-  --bg2: #f9f9f9;
-  --panel-bg: #ffffff;
-  --slate-500: #6b7280;
-  --card-border: #e6e8ee;
-  --chip-bg: #eef2ff;
-  --chip-text: #27316a;
-  --ring: rgba(0, 33, 71, 0.35);
+  --fg: #2b2b2b;
+  --fg2: #454444;
+  --fg-inverted: #ffffff;
+  --panel-bg: #ffffffd0;
+  --panel-bg-opaque: #ffffff;
+  --panel-bg-inverted: #303030;
+}
+
+html {
+  width: 100%;
+  height: 100%;
 }
 
 body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  margin: 0;
-  color: #111;
-  background-color: var(--bg);
+  margin: 20px;
+  color: var(--fg);
+  // background-color: var(--bg);
+  background: linear-gradient(
+    150deg,
+    rgb(234, 234, 234) 25.63%,
+    #fcf4b4 59.66%,
+    #ffecc9 78.57%
+  );
 }
 
 a {

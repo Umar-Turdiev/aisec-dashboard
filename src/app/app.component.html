@@ -1,23 +1,23 @@
 <header class="hdr">
-  <a routerLink="/" class="brand">AI Sec Dashboard</a>
-</header>
-<main class="main">
+  <a routerLink="/" class="brand">AI Sec</a>
   <div role="navigation" class="menubar">
     <a
       routerLink="/"
       routerLinkActive="active"
       [routerLinkActiveOptions]="{ exact: true }"
     >
-      <i class="fa-solid fa-house"></i>
       Dashboard
     </a>
-    <a routerLink="/account" routerLinkActive="active">
-      <i class="fa-solid fa-user"></i>
-      Rules
-    </a>
+    <a routerLink="/pipelines" routerLinkActive="active">Pipelines</a>
+    <a routerLink="/findings" routerLinkActive="active">Findings</a>
+    <a routerLink="/compliance" routerLinkActive="active">Compliance</a>
+    <a routerLink="/rules" routerLinkActive="active">Rules</a>
     <!-- more items, dropdowns, etc. -->
   </div>
+</header>
+<main class="main">
   <div class="page-container">
     <router-outlet></router-outlet>
   </div>
+  <div class="ai-chatbox"></div>
 </main>
