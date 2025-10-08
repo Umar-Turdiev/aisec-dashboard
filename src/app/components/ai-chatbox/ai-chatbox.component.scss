@@ -1,0 +1,96 @@
+.chat {
+  height: 100%;
+  max-height: inherit; /* inherit the cap from the host */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* <- keep content inside the box */
+  border-radius: 40px;
+  background: var(--panel-bg-inverted);
+  border: 1px solid var(--border, #2a2a2a);
+  box-sizing: border-box;
+}
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 6px 12px;
+  .title {
+    font-weight: 500;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .ctl {
+    border-radius: 12px;
+    padding: 6px 10px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+  }
+  .slider {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+.chat-body {
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  height: 100%;
+  align-content: start;
+}
+.msg {
+  display: flex;
+  margin: 0 15px;
+  .bubble {
+    height: fit-content;
+    max-width: 75%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: #f3ffacff;
+  }
+}
+.msg.ai {
+  justify-content: flex-start;
+  .bubble {
+    background: var(--fg);
+    color: var(--fg-inverted);
+  }
+}
+.msg:not(.ai) {
+  justify-content: flex-end;
+}
+.typing {
+  opacity: 0.7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.chat-input {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  textarea {
+    resize: vertical;
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: var(--panel-bg-opaque);
+    border: 1px solid var(--border);
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  button {
+    border-radius: 14px;
+    padding: 8px 14px;
+  }
+  .ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+}

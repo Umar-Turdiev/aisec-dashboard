@@ -1,0 +1,49 @@
+<div class="chat">
+  <div class="chat-header">
+    <div class="title">AI Assistant</div>
+    <div class="controls">
+      <label class="slider">
+        <span>T</span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          [(ngModel)]="temperature"
+        />
+      </label>
+    </div>
+  </div>
+
+  <div class="chat-body" #scroll>
+    <div
+      *ngFor="let m of messages"
+      class="msg"
+      [class.ai]="m.role === 'assistant'"
+    >
+      <div class="bubble">{{ m.content }}</div>
+    </div>
+    <div *ngIf="streaming" class="typing">▌</div>
+  </div>
+
+  <form class="chat-input" (ngSubmit)="send()" autocomplete="off">
+    <textarea
+      [(ngModel)]="draft"
+      name="draft"
+      rows="2"
+      placeholder="Ask about findings, pipelines, compliance…"
+    ></textarea>
+    <div class="row">
+      <button
+        type="button"
+        (click)="stop()"
+        [disabled]="!streaming"
+        class="ghost"
+      >
+        Stop
+      </button>
+      <button type="button" (click)="clear()" class="ghost">Clear</button>
+      <button type="submit" [disabled]="!draft || streaming">Send</button>
+    </div>
+  </form>
+</div>
