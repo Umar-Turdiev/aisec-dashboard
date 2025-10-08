@@ -6,7 +6,6 @@
   overflow: hidden; /* <- keep content inside the box */
   border-radius: 40px;
   background: var(--panel-bg-inverted);
-  border: 1px solid var(--border, #2a2a2a);
   box-sizing: border-box;
 }
 .chat-header {
@@ -14,25 +13,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 6px 12px;
+  padding: 25px;
   .title {
-    font-weight: 500;
-  }
-  .controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .ctl {
-    border-radius: 12px;
-    padding: 6px 10px;
-    background: var(--panel-bg);
-    border: 1px solid var(--border);
-  }
-  .slider {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 20px;
+    margin: 0;
+    color: var(--fg-inverted);
   }
 }
 .chat-body {
@@ -45,6 +30,7 @@
 .msg {
   display: flex;
   margin: 0 15px;
+  font-size: 14px;
   .bubble {
     height: fit-content;
     max-width: 75%;
@@ -66,31 +52,79 @@
 .typing {
   opacity: 0.7;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: white;
 }
 
 .chat-input {
   display: grid;
   gap: 8px;
-  padding: 10px;
+  padding: 15px;
   border-top: 1px solid var(--border);
   textarea {
     resize: vertical;
     border-radius: 14px;
-    padding: 10px 12px;
+    padding: 8px 12px;
     background: var(--panel-bg-opaque);
-    border: 1px solid var(--border);
   }
-  .row {
+  /* Input wrapper with in-field action */
+  .input-wrap {
+    position: relative;
     display: flex;
+    align-items: center;
     gap: 8px;
-    justify-content: space-between;
+
+    border-radius: 30px;
+    padding: 6px 56px 6px 12px; /* space for button on the right */
+
+    /* follow existing foreground; bg is provided by .bg-opaque */
+    background-color: var(--fg2);
   }
-  button {
-    border-radius: 14px;
-    padding: 8px 14px;
-  }
-  .ghost {
+
+  /* Auto-grow textarea; caps height after a few lines */
+  .input-wrap textarea {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: 144px; /* cap growth */
+    resize: none;
+    overflow: auto;
+
+    border: 0;
+    outline: 0;
     background: transparent;
-    border: 1px solid var(--border);
+    color: var(--fg-inverted);
+    font: inherit;
+    line-height: 1.35;
+  }
+
+  /* Circular send/stop button inside the field */
+  .send-btn {
+    position: absolute;
+    right: 6px;
+    width: 40px;
+    height: 40px;
+
+    border: 0;
+    outline: 0;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+
+    /* same yellow as user bubble; fallback chain */
+    background: var(
+      --bubble-user,
+      var(--accent, var(--accent-yellow, #facc15))
+    );
+    color: var(--button-fg, #111);
+    transition: opacity 120ms ease;
+  }
+  .send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* subtle cue when it's a Stop action */
+  .send-btn.is-stop {
+    filter: saturate(0.9) brightness(0.95);
   }
 }

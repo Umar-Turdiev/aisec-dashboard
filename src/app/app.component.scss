@@ -62,7 +62,9 @@
 }
 
 .ai-chatbox {
-  width: 550px;
+  width: 600px;
   background-color: var(--panel-bg-inverted);
   border-radius: 40px;
+  max-height: calc(100dvh - 197px);
+  overflow-y: hidden;
 }
