@@ -1,6 +1,6 @@
 import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ScanService, StartScanResponse } from '../../services/scan.service';
+import { ScanService } from '../../services/scan.service';
 import type { SarifLog, SarifResult } from '../../models/sarif.model';
 
 type Phase = 'idle' | 'starting' | 'scanning' | 'completed' | 'error';
@@ -62,9 +62,9 @@ export class StartScreenComponent {
       ? raw.replace(/\.git$/i, '').replace(/\/+$/, '')
       : `https://github.com/${raw.replace(/\.git$/i, '').replace(/\/+$/, '')}`;
 
-    this.scan.startScan(normalized).subscribe({
+    this.scan.startScan(normalized, 'semgrep').subscribe({
       next: (res) => {
-        this.scan.markStarted(res);
+        this.scan.markStarted(res, 'semgrep');
 
         this.taskId.set(res.taskId);
         this.phase.set('scanning');
@@ -85,7 +85,7 @@ export class StartScreenComponent {
   }
 
   private streamLogsAndFinish(taskId: string) {
-    const sub = this.scan.streamLogs(taskId).subscribe({
+    const sub = this.scan.streamLogs(taskId, 'semgrep').subscribe({
       next: (lines) => {
         if (!lines || lines.length === 0) {
           if (!this.gotAnyLogs) this.logs.set(['(no logs yet)']); // show once
