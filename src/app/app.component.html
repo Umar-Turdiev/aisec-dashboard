@@ -1,5 +1,12 @@
 <header class="hdr">
-  <a routerLink="/" class="brand">AI Sec</a>
+  <a routerLink="/" class="brand">AuditArc</a>
+  <div class="repo-controls">
+    <a class="repo-link" href="https://github.com/psf/requests">
+      <i class="fa-brands fa-github"></i>
+      Repo: pfs/requests</a
+    >
+    <button>Re-Scan</button>
+  </div>
   <div role="navigation" class="menubar">
     <a
       routerLink="/"
@@ -8,9 +15,9 @@
     >
       Dashboard
     </a>
-    <a routerLink="/pipelines" routerLinkActive="active">Pipelines</a>
     <a routerLink="/findings" routerLinkActive="active">Findings</a>
-    <a routerLink="/compliance" routerLinkActive="active">Compliance</a>
+    <a routerLink="/compliances" routerLinkActive="active">Compliance</a>
+    <a routerLink="/pipelines" routerLinkActive="active">Pipelines</a>
     <a routerLink="/rules" routerLinkActive="active">Rules</a>
     <!-- more items, dropdowns, etc. -->
   </div>

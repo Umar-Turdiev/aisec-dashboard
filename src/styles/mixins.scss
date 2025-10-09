@@ -3,3 +3,12 @@
   border-radius: 40px;
   padding: 25px;
 }
+
+@mixin widget {
+  background: var(--panel-bg);
+  border-radius: 40px;
+  padding: 15px 25px;
+  width: 295px;
+  height: 295px;
+  box-sizing: border-box;
+}

@@ -1,4 +1,4 @@
-<section class="panel">
+<!-- <section class="panel">
   <h1>Repository Scan</h1>
 
   <form [formGroup]="form" class="row" (ngSubmit)="start()">
@@ -62,5 +62,51 @@
         No findings from configured rules.
       </div>
     </div>
+  </div>
+</section> -->
+
+<section>
+  <div class="widget">
+    <div class="widget__header">
+      <h1>Semgrep Findings</h1>
+      <a routerLink="/findings" routerLinkActive="active">
+        <i class="fa-solid fa-arrow-up"></i>
+      </a>
+    </div>
+    <div class="widget__content">Details...</div>
+  </div>
+
+  <div class="widget">
+    <div class="widget__header">
+      <h1>Vanta Compliance</h1>
+      <a routerLink="/compliances" routerLinkActive="active">
+        <i class="fa-solid fa-arrow-up"></i>
+      </a>
+    </div>
+    <div class="widget__content">Details...</div>
+  </div>
+
+  <div class="widget">
+    <div class="widget__header">
+      <h1>Harness CI/CD</h1>
+      <a routerLink="/pipelines" routerLinkActive="active">
+        <i class="fa-solid fa-arrow-up"></i>
+      </a>
+    </div>
+    <div class="widget__content">Details...</div>
+  </div>
+
+  <div class="widget">
+    <div class="widget__header">
+      <h1>Risk Score/Trend</h1>
+    </div>
+    <div class="widget__content">Details...</div>
+  </div>
+
+  <div class="widget wide">
+    <div class="widget__header">
+      <h1>Remediation Queue</h1>
+    </div>
+    <div class="widget__content">Details...</div>
   </div>
 </section>
