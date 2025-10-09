@@ -1,32 +1,37 @@
-<header class="hdr">
-  <a routerLink="/" class="brand">AuditArc</a>
-  <div class="repo-controls">
-    <a class="repo-link" href="https://github.com/psf/requests">
-      <i class="fa-brands fa-github"></i>
-      Repo: pfs/requests</a
-    >
-    <button>Re-Scan</button>
-  </div>
-  <div role="navigation" class="menubar">
-    <a
-      routerLink="/"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      Dashboard
-    </a>
-    <a routerLink="/findings" routerLinkActive="active">Findings</a>
-    <a routerLink="/compliances" routerLinkActive="active">Compliance</a>
-    <a routerLink="/pipelines" routerLinkActive="active">Pipelines</a>
-    <a routerLink="/rules" routerLinkActive="active">Rules</a>
-    <!-- more items, dropdowns, etc. -->
-  </div>
-</header>
-<main class="main">
-  <div class="page-container">
-    <router-outlet></router-outlet>
-  </div>
-  <div class="ai-chatbox">
-    <app-ai-chatbox></app-ai-chatbox>
-  </div>
-</main>
+<ng-container *ngIf="hasSession(); else appShell">
+  <app-start-screen></app-start-screen>
+</ng-container>
+
+<ng-template #appShell>
+  <header class="hdr" @slideDown>
+    <a routerLink="/" class="brand">AuditArc</a>
+    <div class="repo-controls">
+      <a class="repo-link" href="https://github.com/psf/requests">
+        <i class="fa-brands fa-github"></i>
+        Repo: pfs/requests</a
+      >
+      <button>Re-Scan</button>
+    </div>
+    <div role="navigation" class="menubar">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+      <a routerLink="/findings" routerLinkActive="active">Findings</a>
+      <a routerLink="/compliances" routerLinkActive="active">Compliance</a>
+      <a routerLink="/pipelines" routerLinkActive="active">Pipelines</a>
+      <a routerLink="/rules" routerLinkActive="active">Rules</a>
+    </div>
+  </header>
+  <main class="main">
+    <div class="page-container">
+      <router-outlet></router-outlet>
+    </div>
+    <div class="ai-chatbox" @popIn>
+      <app-ai-chatbox></app-ai-chatbox>
+    </div>
+  </main>
+</ng-template>

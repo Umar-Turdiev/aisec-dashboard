@@ -1,45 +1,26 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import {
-  trigger,
-  transition,
-  query,
-  style,
-  stagger,
-  animate,
-} from '@angular/animations';
-
 import { ScanService, StartScanResponse } from '../../services/scan.service';
 import type { SarifLog, SarifResult } from '../../models/sarif.model';
 
 type Phase = 'idle' | 'starting' | 'scanning' | 'completed' | 'error';
 
+function canon(input: string): string {
+  let v = (input || '').trim();
+  if (!v) return v;
+  // owner/repo → https://github.com/owner/repo
+  if (!/^https?:\/\//i.test(v)) v = `https://github.com/${v}`;
+  // drop trailing slash and .git
+  v = v.replace(/\.git$/i, '').replace(/\/+$/g, '');
+  return v;
+}
+
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
-  animations: [
-    trigger('widgetsPopIn', [
-      transition(':enter', [
-        query(
-          '.widget',
-          [
-            style({ transform: 'scale(0.94)', opacity: 0 }),
-            stagger(
-              120, // time gap between each
-              animate(
-                '500ms cubic-bezier(0.22, 1, 0.36, 1)',
-                style({ transform: 'scale(1)', opacity: 1 })
-              )
-            ),
-          ],
-          { optional: true }
-        ),
-      ]),
-    ]),
-  ],
+  selector: 'app-start-screen',
+  templateUrl: './start-screen.component.html',
+  styleUrls: ['./start-screen.component.scss'],
 })
-export class DashboardComponent {
+export class StartScreenComponent {
   private fb = inject(FormBuilder);
   private scan = inject(ScanService);
   private destroyRef = inject(DestroyRef);
@@ -73,6 +54,8 @@ export class DashboardComponent {
 
     this.scan.startScan(normalized).subscribe({
       next: (res) => {
+        this.scan.markStarted(res);
+        
         this.taskId.set(res.taskId);
         this.phase.set('scanning');
         this.logs.set(['Streaming logs...']);

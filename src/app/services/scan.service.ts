@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   Observable,
@@ -12,6 +12,12 @@ import {
 
 import { environment } from '../../environments/environment';
 
+export type ScanPhase =
+  | 'idle'
+  | 'starting'
+  | 'scanning'
+  | 'completed'
+  | 'error';
 export interface StartScanResponse {
   taskId: string;
   startedAt: string;
@@ -27,6 +33,21 @@ export interface LogChunk {
 export class ScanService {
   private http = inject(HttpClient);
 
+  readonly scanSession = signal<{ taskId: string; repo: string } | null>(null);
+  readonly scanPhase = signal<ScanPhase>('idle');
+
+  /** Mark a scan as started so AppComponent can switch the shell */
+  markStarted(res: StartScanResponse) {
+    this.scanSession.set({ taskId: res.taskId, repo: res.repo });
+    this.scanPhase.set('scanning');
+  }
+
+  /** Optional: reset state (e.g., for a new repo) */
+  clearSession() {
+    this.scanSession.set(null);
+    this.scanPhase.set('idle');
+  }
+  
   startScan(input: string): Observable<StartScanResponse> {
     let v = String(input || '').trim();
     if (!/^https?:\/\//i.test(v)) v = `https://github.com/${v}`;
