@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-findings',
+  selector: 'app-compliances',
   templateUrl: './compliances.component.html',
   styleUrls: ['./compliances.component.scss'],
 })
