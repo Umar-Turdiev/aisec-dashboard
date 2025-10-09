@@ -8,6 +8,7 @@ import {
   startWith,
   switchMap,
   takeWhile,
+  tap,
 } from 'rxjs';
 
 import { environment } from '../../environments/environment';
@@ -18,11 +19,13 @@ export type ScanPhase =
   | 'scanning'
   | 'completed'
   | 'error';
+
 export interface StartScanResponse {
   taskId: string;
   startedAt: string;
   repo: string;
 }
+
 export interface LogChunk {
   lines: string[];
   end: boolean;
@@ -35,6 +38,7 @@ export class ScanService {
 
   readonly scanSession = signal<{ taskId: string; repo: string } | null>(null);
   readonly scanPhase = signal<ScanPhase>('idle');
+  readonly resultFile = signal<string | null>(null);
 
   /** Mark a scan as started so AppComponent can switch the shell */
   markStarted(res: StartScanResponse) {
@@ -47,7 +51,7 @@ export class ScanService {
     this.scanSession.set(null);
     this.scanPhase.set('idle');
   }
-  
+
   startScan(input: string): Observable<StartScanResponse> {
     let v = String(input || '').trim();
     if (!/^https?:\/\//i.test(v)) v = `https://github.com/${v}`;
@@ -59,6 +63,7 @@ export class ScanService {
     );
   }
 
+  /** Poll Lambda log stream and detect result file name when scan ends */
   streamLogs(taskId: string) {
     let cursor = '';
     return interval(1200).pipe(
@@ -66,18 +71,40 @@ export class ScanService {
       switchMap(() => {
         let params = new HttpParams().set('taskId', taskId);
         if (cursor) params = params.set('cursor', cursor);
-        return this.http.get<LogChunk>(environment.api.logsUrl, { params }); // no headers, no body
+        return this.http.get<LogChunk>(environment.api.logsUrl, { params });
       }),
       map((ch) => {
         cursor = ch.cursor || cursor;
         return ch;
       }),
       takeWhile((ch) => !ch.end, true),
-      map((ch) => ch.lines)
+      map((ch) => ch.lines),
+      tap((lines) => {
+        // Look for result filename line
+        for (const line of lines) {
+          const match = line.match(
+            /semgrep-results-[a-zA-Z0-9_-]+-[a-zA-Z0-9_-]+-\d{8}T\d{6}Z\.json/i
+          );
+          if (match) {
+            const filename = match[0];
+            console.log('🟡 Detected result file:', filename);
+
+            this.resultFile.set(filename);
+
+            // Optionally call result lambda here:
+            const params = new HttpParams().set('name', filename);
+            this.http.get(environment.api.resultUrl, { params }).subscribe({
+              next: (res) => console.log('✅ Result Lambda response:', res),
+              error: (err) => console.error('❌ Failed to fetch result:', err),
+            });
+          }
+        }
+      })
     );
   }
 
-  fetchResult(_: string): Observable<any> {
-    return of(null);
+  fetchResult(name: string): Observable<any> {
+    const params = new HttpParams().set('name', name);
+    return this.http.get(environment.api.resultUrl, { params });
   }
 }

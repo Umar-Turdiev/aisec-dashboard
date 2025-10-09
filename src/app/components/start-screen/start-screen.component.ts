@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ScanService, StartScanResponse } from '../../services/scan.service';
 import type { SarifLog, SarifResult } from '../../models/sarif.model';
@@ -37,6 +37,16 @@ export class StartScreenComponent {
     repoUrl: ['', [Validators.required]], // no format validator
   });
 
+  constructor() {
+    // React to detected result file
+    effect(() => {
+      const file = this.scan.resultFile();
+      if (file) {
+        console.log('📦 Result file detected in StartScreen:', file);
+      }
+    });
+  }
+
   start(): void {
     if (this.phase() === 'starting' || this.phase() === 'scanning') return;
 
@@ -55,7 +65,7 @@ export class StartScreenComponent {
     this.scan.startScan(normalized).subscribe({
       next: (res) => {
         this.scan.markStarted(res);
-        
+
         this.taskId.set(res.taskId);
         this.phase.set('scanning');
         this.logs.set(['Streaming logs...']);
