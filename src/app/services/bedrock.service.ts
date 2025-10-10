@@ -166,7 +166,8 @@ export class BedrockService {
 
     const system = `You are a senior application security analyst. Return clear, actionable guidance. Keep responses concise.`;
 
-    const user = `Given the following findings JSON array, add two fields to each item:
+    const user = `Given the following findings JSON array, add three fields to each item:
+- Severity = 'critical' | 'high' | 'medium' | 'low' | 'info' | 'unknown';
 - aiExplanation: one short paragraph (plain text) explaining the risk in simple terms.
 - aiRemediation: 2-5 specific steps or code changes to fix or mitigate.
 
@@ -200,6 +201,7 @@ ${JSON.stringify(input, null, 2)}`;
       if (base) {
         byId.set(f.id, {
           ...base,
+          severity: (f as any).severity ?? base.severity,
           aiExplanation: (f as any).aiExplanation ?? base.aiExplanation,
           aiRemediation: (f as any).aiRemediation ?? base.aiRemediation,
         });
