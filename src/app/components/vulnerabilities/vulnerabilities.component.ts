@@ -1,6 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
+
 import { FindingsService } from '../../services/findings.service';
 import type { Finding } from '../../models/finding.model';
+import { ChatService } from '../../services/chat.service';
 
 type SortKey = 'severity' | 'rule' | 'file';
 
@@ -8,9 +11,18 @@ type SortKey = 'severity' | 'rule' | 'file';
   selector: 'app-vulnerabilities',
   templateUrl: './vulnerabilities.component.html',
   styleUrls: ['./vulnerabilities.component.scss'],
+  animations: [
+    trigger('popIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('1s cubic-bezier(0.22, 1, 0.36, 1)', style({ opacity: 1 })),
+      ]),
+    ]),
+  ],
 })
 export class VulnerabilitiesComponent {
   private store = inject(FindingsService);
+  private chat = inject(ChatService);
 
   sortBy = signal<SortKey>('severity');
 
@@ -63,5 +75,20 @@ export class VulnerabilitiesComponent {
       default:
         return 'badge';
     }
+  }
+
+  askAiToFix(finding: any) {
+    const prompt = `
+Please analyze and fix the following vulnerability:
+
+Rule: ${finding.ruleId}
+Severity: ${finding.severity}
+Message: ${finding.message}
+File: ${finding.location?.file}:${finding.location?.line}
+Snippet:
+${finding.location?.snippet}
+
+Generate a secure code fix and explain the changes.`;
+    this.chat.sendToChat(prompt);
   }
 }

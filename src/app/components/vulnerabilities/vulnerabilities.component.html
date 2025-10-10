@@ -1,11 +1,14 @@
-<section class="panel">
+<section class="panel" @popIn>
   <div class="vuln-header">
-    <h1>Vulnerabilities</h1>
-    <div class="meta">
-      <span class="count">{{ findings().length }} findings</span>
-      <div class="sort">
-        <label>Sort</label>
-        <select [value]="sortBy()" (change)="onSortChange($event)">
+    <div class="name-box">
+      <h1>Vulnerabilities</h1>
+      <label class="count">{{ findings().length }} findings</label>
+    </div>
+
+    <div class="sort">
+      <label>Sort by: </label>
+      <div class="pill-select">
+        <select id="sortBy" [value]="sortBy()" (change)="onSortChange($event)">
           <option value="severity">Severity</option>
           <option value="rule">Rule</option>
           <option value="file">File</option>
@@ -39,15 +42,28 @@
       }}</pre>
 
       <details class="ai" *ngIf="f.aiExplanation || f.aiRemediation">
-        <summary>AI insights</summary>
-        <div class="ai-block" *ngIf="f.aiExplanation">
-          <h4>Explanation</h4>
-          <p>{{ f.aiExplanation }}</p>
+        <summary>
+          <span class="sum-label">AI insights</span>
+          <i class="chev fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </summary>
+
+        <!-- Wrap inner content so we can animate max-height -->
+        <div class="ai__content">
+          <div class="ai-block" *ngIf="f.aiExplanation">
+            <h4>Explanation</h4>
+            <p>{{ f.aiExplanation }}</p>
+          </div>
+
+          <div class="ai-block" *ngIf="f.aiRemediation">
+            <h4>Remediation</h4>
+            <pre class="remediation">{{ f.aiRemediation }}</pre>
+          </div>
         </div>
-        <div class="ai-block" *ngIf="f.aiRemediation">
-          <h4>Remediation</h4>
-          <pre class="remediation">{{ f.aiRemediation }}</pre>
-        </div>
+        
+        <button class="ai-fix-btn" type="button" (click)="askAiToFix(f)">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          Fix with AI
+        </button>
       </details>
     </li>
   </ul>

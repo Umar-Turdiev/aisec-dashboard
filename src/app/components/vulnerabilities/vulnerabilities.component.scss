@@ -1,4 +1,5 @@
 @use "../../../styles/mixins.scss";
+@import "../../..//styles/tokens.scss";
 
 .panel {
   @include mixins.widget;
@@ -11,9 +12,15 @@
 .vuln-header {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: center;
   gap: 16px;
   margin-bottom: 10px;
+
+  .name-box {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
 
   h1 {
     margin: 0;
@@ -21,23 +28,52 @@
     font-weight: 600;
   }
 
-  .meta {
+  .count {
+    opacity: 0.8;
+  }
+
+  .sort {
     display: flex;
     align-items: center;
-    gap: 12px;
-    .count {
-      opacity: 0.8;
+    gap: 8px;
+
+    label {
+      opacity: 0.85;
     }
-    .sort {
-      display: flex;
+
+    .pill-select {
+      position: relative;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+
       select {
-        background: var(--panel-bg);
+        appearance: none; // hide native arrow
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        background: var(--panel-bg-opaque);
         color: var(--fg);
-        border: 1px solid var(--border, #2a2a2a);
-        border-radius: 10px;
-        padding: 6px 8px;
+        border: $border;
+        padding: 8px 36px 8px 12px;
+        border-radius: 9999px; /* ✅ full pill */
+        font: inherit;
+        line-height: 1;
+        cursor: pointer;
+        outline: none;
+      }
+
+      /* chevron icon via pseudo-element so we keep it pure CSS */
+      &::after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        width: 10px;
+        height: 10px;
+        pointer-events: none;
+        mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'><path fill='black' d='M31.5 192h257c28.4 0 42.7 34.5 22.6 54.6l-128.5 128c-12.5 12.5-32.8 12.5-45.3 0l-128.5-128C-11.2 226.5 3.1 192 31.5 192z'/></svg>")
+          center / contain no-repeat;
+        background: currentColor;
+        opacity: 0.75;
       }
     }
   }
@@ -59,8 +95,8 @@
 }
 
 .item {
-  border: 1px solid var(--border, #2a2a2a);
-  border-radius: 14px;
+  border: $border;
+  border-radius: 25px;
   padding: 12px;
   background: var(--panel-bg);
 
@@ -100,21 +136,103 @@
   }
 
   details.ai {
+    border: $border;
+    border-radius: 14px;
     margin-top: 10px;
+    background: var(--panel-bg);
 
     summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
       cursor: pointer;
       user-select: none;
-      opacity: 0.9;
+      list-style: none;
+      outline: none;
+
+      /* remove default marker (Safari/Firefox) */
+      &::-webkit-details-marker {
+        display: none;
+      }
+      &::marker {
+        content: "";
+      }
+
+      .sum-label {
+        font-weight: 600;
+      }
+      .chev {
+        transition: transform 0.25s ease;
+        font-size: 12px;
+        opacity: 0.9;
+      }
+    }
+
+    /* wrap to animate height + fade/slide */
+    .ai__content {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: max-height 0.35s ease, opacity 0.25s ease,
+        transform 0.25s ease;
+      padding: 0 12px; /* space retained but no top/bottom until open */
+    }
+
+    .ai-fix-btn {
+      margin-top: 8px;
+      background: var(--accent-yellow, #ffd60a);
+      color: #000;
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+
+      i {
+        font-size: 14px;
+      }
+
+      &:hover {
+        background: #ffe45e;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+
+    /* open state */
+    &[open] {
+      .chev {
+        transform: rotate(180deg);
+      }
+      .ai__content {
+        max-height: 1000px; /* big enough to fit content */
+        opacity: 1;
+        transform: translateY(0);
+        padding-bottom: 12px; /* reveal bottom padding on open */
+      }
     }
 
     .ai-block {
-      margin-top: 8px;
+      margin-top: 10px;
+
       h4 {
-        margin: 0 0 4px;
+        margin: 0 0 6px;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
+        opacity: 0.9;
       }
+
       p,
       pre.remediation {
         margin: 0;
@@ -123,6 +241,8 @@
         border-radius: 10px;
         padding: 10px;
         white-space: pre-wrap;
+        font-size: 13px;
+        line-height: 1.35;
       }
     }
   }
