@@ -129,12 +129,116 @@ export class BedrockService {
   }
 
   /** Helper: safely parse model JSON output */
+  /** Helper: parse model JSON output, repairing common issues (double-encoded + truncated arrays) */
   private tryParseJSON<T = any>(text: string): T | null {
-    try {
-      return JSON.parse(text);
-    } catch {
-      return null;
+    if (!text) return null;
+
+    // 1) Strip code fences if any
+    let s = text.trim();
+    if (s.startsWith('```')) {
+      s = s.replace(/```[a-zA-Z]*\n?|```/g, '').trim();
     }
+
+    // 2) Try to de-stringify up to 3 layers (handles "\"escaped\"" arrays)
+    for (let i = 0; i < 3; i++) {
+      if (typeof s === 'string') {
+        try {
+          const parsed = JSON.parse(s);
+          s = parsed as any;
+        } catch {
+          break;
+        }
+      }
+    }
+
+    // 3) If it’s now an object/array, return it
+    if (typeof s === 'object') return s as T;
+
+    // 4) If it’s still a string, try a normal parse once more
+    if (typeof s === 'string') {
+      try {
+        return JSON.parse(s) as T;
+      } catch {
+        // fall through to repair attempt
+      }
+    }
+
+    // 5) Last resort: repair a likely truncated JSON array
+    const repaired = this.repairLikelyJSONArray(
+      typeof s === 'string' ? s : String(s)
+    );
+    if (repaired) {
+      try {
+        return JSON.parse(repaired) as T;
+      } catch {
+        // give up
+      }
+    }
+
+    return null;
+  }
+
+  /** Attempt to repair a truncated JSON array by dropping the last incomplete element and closing brackets */
+  private repairLikelyJSONArray(s: string): string | null {
+    const str = s.trim();
+
+    // Only attempt on something that looks like a JSON array
+    const firstBracket = str.indexOf('[');
+    if (firstBracket === -1) return null;
+
+    // Walk and keep bracket/quote state; stop at last *balanced* position
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    let lastBalancedIdx = -1;
+
+    for (let i = firstBracket; i < str.length; i++) {
+      const ch = str[i];
+
+      if (inStr) {
+        if (esc) {
+          esc = false;
+        } else if (ch === '\\') {
+          esc = true;
+        } else if (ch === '"') {
+          inStr = false;
+        }
+      } else {
+        if (ch === '"') inStr = true;
+        else if (ch === '[' || ch === '{') depth++;
+        else if (ch === ']' || ch === '}') depth = Math.max(0, depth - 1);
+
+        if (depth === 0) lastBalancedIdx = i;
+      }
+    }
+
+    // If we never reached balance, try cutting at last '}' or ']'
+    let cutIdx =
+      lastBalancedIdx >= 0
+        ? lastBalancedIdx
+        : Math.max(str.lastIndexOf(']'), str.lastIndexOf('}'));
+
+    if (cutIdx < 0) return null;
+
+    let candidate = str.slice(0, cutIdx + 1);
+
+    // Ensure it ends with a closing array bracket
+    // If last char is '}', we may need to add a ']'
+    const trimmed = candidate.trimEnd();
+    if (!trimmed.endsWith(']')) {
+      // Remove trailing commas before closing
+      candidate = candidate.replace(/,\s*$/, '');
+      candidate += ']';
+    }
+
+    // Also ensure it *starts* at the first '['
+    candidate = candidate.slice(firstBracket);
+
+    // Quick sanity: must start with '[' and end with ']'
+    const ctrim = candidate.trim();
+    if (!(ctrim.startsWith('[') && ctrim.endsWith(']'))) return null;
+
+    return ctrim;
   }
 
   /** Trim long fields so prompts stay small */

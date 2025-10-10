@@ -1,8 +1,10 @@
 <section class="panel">
-  <h1>Repository Scan</h1>
+  <h1>
+    AuditArc: AI Agent for
+    <b class="bolder gradient-text">{{ rotatingWord }}</b>
+  </h1>
 
   <form [formGroup]="form" class="row" (ngSubmit)="start()">
-    <label for="repoUrl">Public repo</label>
     <input
       id="repoUrl"
       type="text"

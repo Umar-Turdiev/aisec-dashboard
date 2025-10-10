@@ -2,6 +2,7 @@ import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ScanService } from '../../services/scan.service';
 import type { SarifLog, SarifResult } from '../../models/sarif.model';
+import { ToolKind } from '../../models/finding.model';
 
 type Phase = 'idle' | 'starting' | 'scanning' | 'completed' | 'error';
 
@@ -34,8 +35,24 @@ export class StartScreenComponent {
   errorText = signal<string>('');
 
   form = this.fb.group({
-    repoUrl: ['', [Validators.required]], // no format validator
+    repoUrl: ['https://github.com/TransformerOptimus/SuperAGI', [Validators.required]], // no format validator
   });
+
+  rotatingWord = 'COMPLIANCE';
+
+  private rotatingWords = [
+    'COMPLIANCE',
+    'VULNERABILITY FINDINGS',
+    'CI/CD PIPELINES',
+  ];
+
+  ngOnInit() {
+    let index = 0;
+    setInterval(() => {
+      index = (index + 1) % this.rotatingWords.length;
+      this.rotatingWord = this.rotatingWords[index];
+    }, 3000); // change every 3s
+  }
 
   constructor() {
     // React to detected result file
@@ -51,7 +68,7 @@ export class StartScreenComponent {
     if (this.phase() === 'starting' || this.phase() === 'scanning') return;
 
     this.phase.set('starting');
-    this.logs.set(['Initializing scan...']);
+    this.logs.set(['Initializing scans...']);
     this.errorText.set('');
     this.findings.set([]);
     this.taskId.set(null);
@@ -62,25 +79,51 @@ export class StartScreenComponent {
       ? raw.replace(/\.git$/i, '').replace(/\/+$/, '')
       : `https://github.com/${raw.replace(/\.git$/i, '').replace(/\/+$/, '')}`;
 
-    this.scan.startScan(normalized, 'semgrep').subscribe({
-      next: (res) => {
-        this.scan.markStarted(res, 'semgrep');
+    // Run both Semgrep and Harness in parallel
+    const tools: ToolKind[] = ['semgrep', 'harness'];
 
-        this.taskId.set(res.taskId);
-        this.phase.set('scanning');
-        this.logs.set(['Streaming logs...']);
-        this.scan.startLogPolling(res.taskId, 'semgrep');
-      },
-      error: (e) => {
-        this.phase.set('error');
-        const msg = (
-          e?.error?.message ||
-          e?.message ||
-          'Start failed'
-        ).toString();
-        this.errorText.set(msg);
-        this.logs.set([`Start failed: ${msg}`]);
-      },
+    this.phase.set('scanning');
+    this.logs.set(['🚀 Starting all scans...']);
+
+    tools.forEach((tool) => {
+      this.logs.update((v) => [...v, `--- Starting ${tool.toUpperCase()} ---`]);
+
+      this.scan.startScan(normalized, tool).subscribe({
+        next: (res) => {
+          // Some start lambdas wrap JSON inside res.body (string)
+          const body =
+            typeof (res as any)?.body === 'string'
+              ? JSON.parse((res as any).body)
+              : res;
+
+          let taskId = body?.taskId || res?.taskId;
+          const repo = body?.repo || res?.repo || normalized;
+
+          if (!taskId) {
+            this.logs.update((v) => [...v, `[${tool}] ❌ No taskId returned.`]);
+            return;
+          }
+
+          this.logs.update((v) => [
+            ...v,
+            `[${tool}] ✅ Started with taskId=${taskId}`,
+          ]);
+
+          this.scan.markStarted(
+            { taskId, startedAt: new Date().toISOString(), repo },
+            tool
+          );
+          this.scan.startLogPolling(taskId, tool);
+        },
+        error: (e) => {
+          const msg = (
+            e?.error?.message ||
+            e?.message ||
+            'Start failed'
+          ).toString();
+          this.logs.update((v) => [...v, `[${tool}] ❌ Start failed: ${msg}`]);
+        },
+      });
     });
   }
 

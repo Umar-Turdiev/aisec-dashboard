@@ -39,7 +39,18 @@
         <i class="fa-solid fa-arrow-up"></i>
       </a>
     </div>
-    <div class="widget__content">Details...</div>
+    <div class="widget__content">
+      <apx-chart
+        [series]="vantaSeries()"
+        [chart]="vantaChart"
+        [plotOptions]="vantaPlot"
+        [colors]="vantaColors"
+        [dataLabels]="vantaDataLabels"
+        [xaxis]="vantaXaxis()"
+        [yaxis]="vantaYaxis"
+        [tooltip]="vantaTooltip"
+      ></apx-chart>
+    </div>
   </div>
 
   <div class="widget">
@@ -49,7 +60,14 @@
         <i class="fa-solid fa-arrow-up"></i>
       </a>
     </div>
-    <div class="widget__content">Details...</div>
+    <div class="widget__content">
+      <div class="widget__content harness">
+        <!-- <pre class="code-block"
+          >{{ store.byTool("harness")()[0]?.location?.snippet }}
+    </pre
+        > -->
+      </div>
+    </div>
   </div>
 
   <div class="widget">

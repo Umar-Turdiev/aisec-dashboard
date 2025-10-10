@@ -81,7 +81,7 @@ export class VulnerabilitiesComponent {
   };
 
   findings = computed(() => {
-    const list = this.store.all();
+    const list = this.store.byTool('semgrep')();
     const sort = this.sortBy();
     const bySev = (a: Finding, b: Finding) =>
       (this.sevRank[a.severity] ?? 9) - (this.sevRank[b.severity] ?? 9) ||

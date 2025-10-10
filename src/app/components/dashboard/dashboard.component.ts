@@ -51,7 +51,7 @@ type Sev = 'critical' | 'high' | 'medium' | 'low' | 'info';
   ],
 })
 export class DashboardComponent {
-  private store = inject(FindingsService);
+  store = inject(FindingsService);
 
   // Semgrep-only for this widget (keep or swap to all-tools if you want)
   semgrep = computed(() => this.store.byTool('semgrep')());
@@ -134,7 +134,7 @@ export class DashboardComponent {
   barChart: ApexChart = {
     type: 'bar',
     height: 28,
-    width: 330,
+    width: 200,
     stacked: true,
     sparkline: { enabled: true }, // hides axes/grid
     animations: { enabled: false },
@@ -170,7 +170,7 @@ export class DashboardComponent {
     enabled: true,
     theme: 'light', // looks consistent with your UI
     x: {
-      show: false
+      show: false,
     },
     y: {
       formatter: (val: number, opts: any) => {
@@ -191,4 +191,93 @@ export class DashboardComponent {
   };
   barYaxis = { show: false };
   barLegend = { show: false }; // we already have the legend next to the pie
+
+  // === VANTA TOP-5 COMPLIANCE (clean minimal yellow style) ===
+  vanta = computed(() => this.store.byTool('vanta')());
+
+  private parseVanta(msg: string) {
+    const m = msg.match(/([\d.]+)%\s*complete\s*\((\d+)\s*\/\s*(\d+)/i);
+    const percent = m ? Number(m[1]) : 0;
+    const done = m ? Number(m[2]) : 0;
+    const total = m ? Number(m[3]) : 0;
+    return { percent, done, total };
+  }
+
+  vantaTop5 = computed(() => {
+    const items = this.vanta().map((v) => {
+      const { percent, done, total } = this.parseVanta(v.message || '');
+      return { title: v.title ?? v.ruleId, percent, done, total };
+    });
+    return items.sort((a, b) => b.percent - a.percent).slice(0, 5);
+  });
+
+  vantaChart: ApexChart = {
+    type: 'bar',
+    height: 180,
+    background: 'transparent',
+    sparkline: { enabled: true },
+    animations: { enabled: false },
+    toolbar: { show: false },
+  };
+
+  vantaPlot: ApexPlotOptions = {
+    bar: {
+      horizontal: true,
+      barHeight: '70%',
+      borderRadius: 6,
+    },
+  };
+
+  vantaColors = ['#e9d700']; // bright golden-yellow tone
+
+  vantaSeries = computed(() => [
+    {
+      name: 'Completion',
+      data: this.vantaTop5().map((x) => Number(x.percent.toFixed(1))),
+    },
+  ]);
+
+  vantaXaxis = computed(() => ({
+    categories: this.vantaTop5().map((x) => x.title),
+    labels: {
+      show: true,
+      style: {
+        colors: Array(this.vantaTop5().length).fill('#2b2b2b'),
+        fontSize: '13px',
+        fontWeight: 500,
+      },
+    },
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+  }));
+
+  vantaYaxis = { show: false };
+
+  vantaDataLabels = {
+    enabled: true,
+    formatter: (val: number) => `${val.toFixed(1)}%`,
+    style: {
+      color: '#000',
+      fontSize: '13px',
+      fontWeight: 600,
+    },
+    background: {
+      enabled: false,
+    },
+  };
+
+  vantaGrid = {
+    show: false, // hide background grid
+  };
+
+  vantaTooltip = {
+    enabled: true,
+    theme: 'light',
+    y: {
+      formatter: (val: number, opts: any) => {
+        const row = this.vantaTop5()[opts.dataPointIndex];
+        return `${val.toFixed(1)}% (${row.done}/${row.total} controls)`;
+      },
+    },
+  };
 }
