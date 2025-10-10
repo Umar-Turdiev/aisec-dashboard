@@ -261,6 +261,7 @@
   letter-spacing: 0.02em;
   background: var(--panel-bg-inverted);
   border: 1px solid var(--border, #2a2a2a);
+  color: var(--fg-inverted);
 }
 .badge--crit {
   background: #2b0b0b;

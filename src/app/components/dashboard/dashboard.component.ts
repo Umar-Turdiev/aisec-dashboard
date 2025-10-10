@@ -81,55 +81,114 @@ export class DashboardComponent {
   severitySeries = computed(() => this.order.map((s) => this.counts()[s]));
   severityLabels = this.order.map((s) => s[0].toUpperCase() + s.slice(1));
 
-  // Monochrome pie settings
   chart: ApexChart = {
     type: 'pie',
     width: '100%',
+    height: 300,
     sparkline: { enabled: true },
+    background: 'transparent',
   };
-  theme: ApexTheme = {
-    monochrome: {
-      enabled: true,
-      color: '#bcbe1e',
-      shadeTo: 'light',
-      shadeIntensity: 1,
-    },
-  };
-  tooltip = {
-    theme: 'light', // makes tooltip background white and text dark
-    style: {
-      fontSize: '14px',
-      color: '#2b2b2b',
-    },
-  };
+  // Golden palette (darkest → lightest)
+  colors = ['#a98600', '#dab600', '#e9d700', '#f8ed62', '#fff9ae'];
   dataLabels = {
-    enabled: true,
-    style: {
-      colors: ['#2b2b2b'], // white text inside slices (looks great on colored chart)
-      fontSize: '14px',
-    },
-    dropShadow: {
-      enabled: false,
-    },
-    formatter: (_val: number, opts: any) => {
-      const label = opts.w.globals.labels[opts.seriesIndex];
-      const count = opts.w.globals.series[opts.seriesIndex]; // <-- actual count
-      return `${label}:\n ${count}`;
-    },
+    enabled: false, // ⬅️ hide text labels on the chart itself
   };
   plotOptions = {
     pie: {
-      dataLabels: {
-        offset: -9, // ⬅️ negative value pulls labels inward
-        minAngleToShowLabel: 10,
-      },
+      // offsetY: 10,
+      expandOnClick: false,
     },
   };
-  stroke: ApexStroke = { width: 3 };
+  stroke: ApexStroke = { width: 3, colors: ['#fff'] };
+  legend: ApexLegend = {
+    show: true,
+    position: 'right', // ⬅️ show legend on right
+    fontSize: '14px',
+    horizontalAlign: 'center',
+    height: 120,
+    offsetY: -10,
+    labels: {
+      colors: ['#2b2b2b'], // text color
+    },
+    itemMargin: {
+      vertical: 4,
+    },
+  };
+  tooltip = {
+    theme: 'light',
+    style: { fontSize: '14px', color: '#2b2b2b' },
+    fillSeriesColor: false,
+    marker: { show: false },
+  };
   responsive: ApexResponsive[] = [
     {
-      breakpoint: 480,
-      options: { chart: { width: 220 }, legend: { position: 'bottom' } },
+      breakpoint: 640,
+      options: {
+        chart: { width: '100%' },
+        legend: { position: 'bottom' },
+      },
     },
   ];
+
+  // === Single stacked bar (one compact line) ===
+  barChart: ApexChart = {
+    type: 'bar',
+    height: 28,
+    width: 330,
+    stacked: true,
+    sparkline: { enabled: true }, // hides axes/grid
+    animations: { enabled: false },
+  };
+
+  // your existing order/colors
+  barColors = ['#a98600', '#dab600', '#e9d700', '#f8ed62', '#fff9ae'];
+
+  // make ONE category and MULTIPLE series (each series has one value)
+  barSeries = computed(() => {
+    const c = this.counts();
+    return [
+      { name: 'Critical', data: [c.critical] },
+      { name: 'High', data: [c.high] },
+      { name: 'Medium', data: [c.medium] },
+      { name: 'Low', data: [c.low] },
+      { name: 'Info', data: [c.info] },
+    ];
+  });
+
+  barPlot: ApexPlotOptions = {
+    bar: {
+      horizontal: true,
+      distributed: false, // must be false for stacking
+      barHeight: '100%',
+      borderRadius: 10,
+    },
+  };
+
+  barFill: ApexFill = { opacity: 1, colors: this.barColors };
+  barStroke: ApexStroke = { width: 0 };
+  barTooltip = {
+    enabled: true,
+    theme: 'light', // looks consistent with your UI
+    x: {
+      show: false
+    },
+    y: {
+      formatter: (val: number, opts: any) => {
+        return `${val} issues`; // e.g. "High: 3 issues"
+      },
+    },
+    style: {
+      fontSize: '13px',
+      color: '#2b2b2b',
+    },
+  };
+  // hide axes completely (we only want the line)
+  barXaxis = {
+    categories: ['All Severities'],
+    labels: { show: false },
+    axisTicks: { show: false },
+    axisBorder: { show: false },
+  };
+  barYaxis = { show: false };
+  barLegend = { show: false }; // we already have the legend next to the pie
 }

@@ -48,7 +48,7 @@ export class FindingsService {
         title: 'Unbounded agent loop',
         message:
           'Agent loop without max iterations / timeouts. Add guards. (Agentic T4 / LLM04)',
-        severity: 'medium',
+        severity: 'unknown',
         location: {
           file: 'repo/src/requests/models.py',
           line: 831,

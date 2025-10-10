@@ -6,17 +6,28 @@
         <i class="fa-solid fa-arrow-up"></i>
       </a>
     </div>
-    <div class="widget__content">
+    <div class="widget__content semgrep">
       <apx-chart
         [series]="severitySeries()"
         [labels]="severityLabels"
         [chart]="chart"
-        [theme]="theme"
-        [stroke]="stroke"
-        [responsive]="responsive"
-        [tooltip]="tooltip"
+        [colors]="colors"
         [dataLabels]="dataLabels"
         [plotOptions]="plotOptions"
+        [stroke]="stroke"
+        [legend]="legend"
+        [tooltip]="tooltip"
+        [responsive]="responsive"
+      ></apx-chart>
+
+      <apx-chart
+        [series]="barSeries()"
+        [chart]="barChart"
+        [colors]="barColors"
+        [plotOptions]="barPlot"
+        [fill]="barFill"
+        [stroke]="barStroke"
+        [tooltip]="barTooltip"
       ></apx-chart>
     </div>
   </div>

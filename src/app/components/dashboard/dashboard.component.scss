@@ -56,13 +56,11 @@ section {
   width: 595px !important;
 }
 
-/* ---- Semgrep donut (segmented ring) ---- */
-.semgrep-donut {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 4px auto;
-  animation: widgetPop 0.35s ease;
+/* ---- Semgrep Widget Content ---- */
+.semgrep {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
 }
 
 @keyframes widgetPop {
