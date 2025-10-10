@@ -8,7 +8,7 @@ import { RulesComponent } from './components/rules/rules.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
-  { path: 'findings', component: VulnerabilitiesComponent },
+  { path: 'vulnerabilities', component: VulnerabilitiesComponent },
   { path: 'compliances', component: CompliancesComponent },
   { path: 'pipelines', component: PipelinesComponent },
   { path: 'rules', component: RulesComponent },
