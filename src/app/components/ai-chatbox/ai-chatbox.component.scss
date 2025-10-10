@@ -33,17 +33,39 @@
   font-size: 14px;
   .bubble {
     height: fit-content;
-    max-width: 75%;
-    padding: 12px 14px;
+    max-width: 300px;
+    padding: 0 14px;
     border-radius: 16px;
     background: var(--accent);
   }
+
+  .prose pre {
+    background: #0f1217;
+    border-radius: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    white-space: pre;
+  }
+  .prose pre code {
+    display: inline-block;
+    min-width: 100%;
+    white-space: pre;
+  }
+  .prose code {
+    /* inline code */
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 10px;
+  }
 }
 .msg.ai {
-  justify-content: flex-start;
+  justify-content: center;
   .bubble {
-    background: var(--fg);
+    background: none;
     color: var(--fg-inverted);
+    min-width: 95% !important;
+    padding: 0;
   }
 }
 .msg:not(.ai) {

@@ -108,9 +108,13 @@
     .rule {
       opacity: 0.9;
     }
-    .msg {
-      flex: 1 1 auto;
-    }
+  }
+
+  .msg {
+    margin: 15px 0;
+    font-size: 17px;
+    font-weight: 500;
+    justify-content: start !important;
   }
 
   .loc {
@@ -128,11 +132,12 @@
     padding: 10px;
     border-radius: 10px;
     background: var(--panel-bg-inverted);
-    color: var(--accent);
+    color: var(--fg-inverted);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12px;
     line-height: 1.35;
     white-space: pre-wrap;
+    display: block;
   }
 
   details.ai {
@@ -161,7 +166,7 @@
       }
 
       .sum-label {
-        font-weight: 600;
+        font-weight: 400;
       }
       .chev {
         transition: transform 0.25s ease;
@@ -176,14 +181,13 @@
       max-height: 0;
       opacity: 0;
       transform: translateY(-4px);
-      transition: max-height 0.35s ease, opacity 0.25s ease,
+      transition: max-height 0.75s ease, opacity 0.25s ease,
         transform 0.25s ease;
       padding: 0 12px; /* space retained but no top/bottom until open */
     }
 
     .ai-fix-btn {
-      margin-top: 8px;
-      background: var(--accent-yellow, #ffd60a);
+      background: #ffe877;
       color: #000;
       border: none;
       font-weight: 600;
@@ -194,19 +198,16 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: 10px;
+      margin-bottom: 10px;
 
       i {
         font-size: 14px;
-      }
-
-      &:hover {
-        background: #ffe45e;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(1px);
       }
     }
 

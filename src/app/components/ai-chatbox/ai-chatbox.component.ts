@@ -5,7 +5,9 @@ import {
   inject,
   effect,
   DestroyRef,
+  ViewEncapsulation,
 } from '@angular/core';
+
 import { BedrockService } from '../../services/bedrock.service';
 import { ChatService } from '../../services/chat.service';
 
@@ -15,6 +17,7 @@ type TurnRole = 'system' | 'user' | 'assistant';
   selector: 'app-ai-chatbox',
   templateUrl: './ai-chatbox.component.html',
   styleUrls: ['./ai-chatbox.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class AiChatboxComponent {
   private chat = inject(ChatService);

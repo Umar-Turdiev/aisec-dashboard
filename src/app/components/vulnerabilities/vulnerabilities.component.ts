@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 import { FindingsService } from '../../services/findings.service';
@@ -11,6 +11,7 @@ type SortKey = 'severity' | 'rule' | 'file';
   selector: 'app-vulnerabilities',
   templateUrl: './vulnerabilities.component.html',
   styleUrls: ['./vulnerabilities.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('popIn', [
       transition(':enter', [
@@ -23,6 +24,50 @@ type SortKey = 'severity' | 'rule' | 'file';
 export class VulnerabilitiesComponent {
   private store = inject(FindingsService);
   private chat = inject(ChatService);
+
+  langOf(file?: string | null): string | undefined {
+    const ext = (file || '').split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'py':
+        return 'python';
+      case 'ts':
+        return 'typescript';
+      case 'js':
+        return 'javascript';
+      case 'tsx':
+        return 'tsx';
+      case 'jsx':
+        return 'jsx';
+      case 'go':
+        return 'go';
+      case 'rs':
+        return 'rust';
+      case 'rb':
+        return 'ruby';
+      case 'java':
+        return 'java';
+      case 'cs':
+        return 'csharp';
+      case 'c':
+        return 'c';
+      case 'cpp':
+      case 'cc':
+      case 'cxx':
+        return 'cpp';
+      case 'sh':
+      case 'bash':
+        return 'bash';
+      case 'yml':
+      case 'yaml':
+        return 'yaml';
+      case 'json':
+        return 'json';
+      case 'sql':
+        return 'sql';
+      default:
+        return undefined; // let hljs auto-detect
+    }
+  }
 
   sortBy = signal<SortKey>('severity');
 
@@ -79,6 +124,8 @@ export class VulnerabilitiesComponent {
 
   askAiToFix(finding: any) {
     const prompt = `
+When replying, please use markdown formatting for headers, please start with heading-2
+
 Please analyze and fix the following vulnerability:
 
 Rule: ${finding.ruleId}

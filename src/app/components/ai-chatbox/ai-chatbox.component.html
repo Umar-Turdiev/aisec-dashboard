@@ -9,7 +9,7 @@
       class="msg"
       [class.ai]="m.role === 'assistant'"
     >
-      <div class="bubble">{{ m.content }}</div>
+      <div class="bubble prose" [innerHTML]="m.content | md"></div>
     </div>
     <div *ngIf="streaming" class="typing">▌</div>
   </div>

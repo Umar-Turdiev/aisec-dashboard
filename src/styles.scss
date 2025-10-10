@@ -1,6 +1,8 @@
 @use "./styles/mixins";
 @use "./styles/tokens";
 
+@import 'highlight.js/styles/github-dark.css';
+
 :root {
   --fg: #2b2b2b;
   --fg2: #454444;

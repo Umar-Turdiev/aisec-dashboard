@@ -13,6 +13,8 @@ import { CompliancesComponent } from './components/compliances/compliances.compo
 import { PipelinesComponent } from './components/pipelines/pipelines.component';
 import { RulesComponent } from './components/rules/rules.component';
 import { StartScreenComponent } from './components/start-screen/start-screen.component';
+import { MarkdownPipe } from './shared/markdown.pipe';
+import { CodeHighlightPipe } from './shared/code-highlight.pipe';
 
 @NgModule({
   declarations: [
@@ -23,7 +25,7 @@ import { StartScreenComponent } from './components/start-screen/start-screen.com
     CompliancesComponent,
     PipelinesComponent,
     RulesComponent,
-    StartScreenComponent
+    StartScreenComponent,
   ],
   imports: [
     BrowserModule,
@@ -32,6 +34,8 @@ import { StartScreenComponent } from './components/start-screen/start-screen.com
     ReactiveFormsModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    MarkdownPipe,
+    CodeHighlightPipe,
   ],
   providers: [],
   bootstrap: [AppComponent],

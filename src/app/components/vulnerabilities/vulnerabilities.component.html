@@ -26,8 +26,9 @@
       <div class="row">
         <span class="{{ badgeClass(f.severity) }}">{{ f.severity }}</span>
         <code class="rule" [title]="f.ruleId">{{ f.ruleId }}</code>
-        <span class="msg">{{ f.message }}</span>
       </div>
+
+      <span class="msg">{{ f.message }}</span>
 
       <div class="loc" *ngIf="f.location?.file">
         <i class="fa-regular fa-file-code"></i>
@@ -37,9 +38,11 @@
         >
       </div>
 
-      <pre class="snippet" *ngIf="f.location?.snippet">{{
-        f.location?.snippet
-      }}</pre>
+      <code
+        class="snippet hljs"
+        *ngIf="f.location?.snippet"
+        [innerHTML]="f.location?.snippet | code : langOf(f.location?.file)"
+      ></code>
 
       <details class="ai" *ngIf="f.aiExplanation || f.aiRemediation">
         <summary>
@@ -59,7 +62,7 @@
             <pre class="remediation">{{ f.aiRemediation }}</pre>
           </div>
         </div>
-        
+
         <button class="ai-fix-btn" type="button" (click)="askAiToFix(f)">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           Fix with AI
