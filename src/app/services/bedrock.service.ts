@@ -5,6 +5,7 @@ import {
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
 import { environment } from '../../environments/environment';
+import { Finding } from '../models/finding.model';
 
 export type Role = 'system' | 'user' | 'assistant';
 export type Turn = { role: Role; content: string };
@@ -125,5 +126,85 @@ export class BedrockService {
       }
     }
     return full;
+  }
+
+  /** Helper: safely parse model JSON output */
+  private tryParseJSON<T = any>(text: string): T | null {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Trim long fields so prompts stay small */
+  private sanitizeForAI(
+    findings: Finding[],
+    maxSnippet = 800,
+    maxMsg = 400
+  ): Finding[] {
+    return findings.map((f) => ({
+      ...f,
+      message: (f.message || '').slice(0, maxMsg),
+      location: f.location
+        ? {
+            ...f.location,
+            snippet: (f.location.snippet || '').slice(0, maxSnippet),
+          }
+        : undefined,
+      // don’t send huge raw blobs
+      raw: undefined,
+    }));
+  }
+
+  /**
+   * Enrich findings with AI:
+   * adds aiExplanation + aiRemediation to each item and returns a new array.
+   */
+  async enrichFindings(findings: Finding[]): Promise<Finding[]> {
+    const input = this.sanitizeForAI(findings);
+
+    const system = `You are a senior application security analyst. Return clear, actionable guidance. Keep responses concise.`;
+
+    const user = `Given the following findings JSON array, add two fields to each item:
+- aiExplanation: one short paragraph (plain text) explaining the risk in simple terms.
+- aiRemediation: 2-5 specific steps or code changes to fix or mitigate.
+
+Rules:
+- Do NOT change or remove any existing properties.
+- Do NOT invent file paths or lines; only use what's provided.
+- If information is missing, write 'Unknown' briefly—do not guess.
+- Respond with JSON ONLY (the full modified array).
+
+Findings:
+${JSON.stringify(input, null, 2)}`;
+
+    const text = await this.invokeOnce(
+      [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      { maxTokens: 1400, temperature: 0.2, topP: 0.9 }
+    );
+
+    const maybe = this.tryParseJSON<Finding[]>(text);
+    if (!maybe || !Array.isArray(maybe)) {
+      console.warn('⚠️ AI returned non-JSON or invalid array; raw:', text);
+      return findings; // fall back gracefully
+    }
+
+    // Merge AI fields back by id to avoid losing anything
+    const byId = new Map(findings.map((f) => [f.id, f]));
+    for (const f of maybe) {
+      const base = byId.get(f.id);
+      if (base) {
+        byId.set(f.id, {
+          ...base,
+          aiExplanation: (f as any).aiExplanation ?? base.aiExplanation,
+          aiRemediation: (f as any).aiRemediation ?? base.aiRemediation,
+        });
+      }
+    }
+    return [...byId.values()];
   }
 }

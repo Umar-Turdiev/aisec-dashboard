@@ -69,7 +69,7 @@ export class StartScreenComponent {
         this.taskId.set(res.taskId);
         this.phase.set('scanning');
         this.logs.set(['Streaming logs...']);
-        this.streamLogsAndFinish(res.taskId); // <— start polling
+        this.scan.startLogPolling(res.taskId, 'semgrep');
       },
       error: (e) => {
         this.phase.set('error');

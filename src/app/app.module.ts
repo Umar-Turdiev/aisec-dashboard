@@ -8,7 +8,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AiChatboxComponent } from './components/ai-chatbox/ai-chatbox.component';
-import { FindingsComponent } from './components/findings/findings.component';
+import { VulnerabilitiesComponent } from './components/vulnerabilities/vulnerabilities.component';
 import { CompliancesComponent } from './components/compliances/compliances.component';
 import { PipelinesComponent } from './components/pipelines/pipelines.component';
 import { RulesComponent } from './components/rules/rules.component';
@@ -19,7 +19,7 @@ import { StartScreenComponent } from './components/start-screen/start-screen.com
     AppComponent,
     DashboardComponent,
     AiChatboxComponent,
-    FindingsComponent,
+    VulnerabilitiesComponent,
     CompliancesComponent,
     PipelinesComponent,
     RulesComponent,

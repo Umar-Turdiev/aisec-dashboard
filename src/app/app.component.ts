@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { ScanService } from './services/scan.service';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { FindingsService } from './services/findings.service';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class AppComponent {
   private scan = inject(ScanService);
+  private findings = inject(FindingsService);
 
   hasSession = computed(() => !!this.scan.scanSession());
+
+  constructor() {
+    this.findings.initDevMockIfEnabled(); // 👈 seeds fake data for UI
+  }
 }

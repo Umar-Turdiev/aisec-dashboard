@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   Observable,
+  Subscription,
   interval,
   map,
   of,
@@ -12,7 +13,13 @@ import {
 } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import {
+  isSarif,
+  mapSemgrepSarifToFindings,
+} from '../models/semgrep.sarif.mapper';
 import type { Finding, ToolKind } from '../models/finding.model';
+import { FindingsService } from './findings.service';
+import { BedrockService } from './bedrock.service';
 
 /* -----------------------------
    Scanner Adapter Abstraction
@@ -40,38 +47,39 @@ const SemgrepAdapter: ScannerAdapter = {
   startUrl: environment.lambdaEndpoints.startScanUrl,
   logsUrl: environment.lambdaEndpoints.scannerLogsUrl,
   resultUrl: environment.lambdaEndpoints.fetchResultUrl,
-  // matches: semgrep-results-<owner>-<repo>-<YYYYMMDD>T<HHMMSS>Z.json
   resultFilePattern:
     /semgrep-results-[a-zA-Z0-9._-]+-[a-zA-Z0-9._-]+-\d{8}T\d{6}Z\.json/i,
 
-  // For now, just mirror what your Lambda returns (already simplified).
-  // Later: replace with a strict mapper to your Finding model.
-  mapResultToFindings(payload: any, _ctx): Finding[] {
-    // If Lambda already returns array shaped like your model, pass through.
-    // Otherwise, map minimal fields for now.
+  mapResultToFindings(payload: any, ctx): Finding[] {
+    // If it looks like SARIF, map it deterministically
+    if (isSarif(payload)) {
+      return mapSemgrepSarifToFindings(payload, ctx);
+    }
+
+    // Else, try to coerce a flattened array you may already return
     if (Array.isArray(payload)) {
-      // Try to coerce into Finding minimally while preserving fields
-      return payload.map((r, idx) => ({
-        id: r.id ?? `semgrep-${idx}`,
+      return payload.map((r: any, i: number) => ({
+        id: r.id ?? `semgrep-${i}`,
         tool: 'semgrep',
         ruleId: r.ruleId ?? 'rule',
         message: r.message?.text ?? r.message ?? '',
-        severity: (r.severity as any) ?? (r.level as any) ?? 'unknown',
+        severity: (r.severity as any) ?? 'unknown',
         location: {
           file:
-            r.locations?.[0]?.physicalLocation?.artifactLocation?.uri ??
-            r.location?.file,
+            r.location?.file ??
+            r.locations?.[0]?.physicalLocation?.artifactLocation?.uri,
           line:
-            r.locations?.[0]?.physicalLocation?.region?.startLine ??
-            r.location?.line,
+            r.location?.line ??
+            r.locations?.[0]?.physicalLocation?.region?.startLine,
           snippet:
-            r.locations?.[0]?.physicalLocation?.region?.snippet?.text ??
-            r.location?.snippet,
+            r.location?.snippet ??
+            r.locations?.[0]?.physicalLocation?.region?.snippet?.text,
         },
         fingerprints: r.fingerprints,
         raw: r,
       })) as Finding[];
     }
+
     return [];
   },
 };
@@ -124,6 +132,10 @@ export interface LogChunk {
 @Injectable({ providedIn: 'root' })
 export class ScanService {
   private http = inject(HttpClient);
+  constructor(
+    private findingsStore: FindingsService,
+    private bedrock: BedrockService
+  ) {}
 
   // current session (task + repo + tool)
   readonly scanSession = signal<{
@@ -133,6 +145,12 @@ export class ScanService {
   } | null>(null);
   readonly scanPhase = signal<ScanPhase>('idle');
   readonly resultFile = signal<string | null>(null);
+
+  // ✅ central log buffer for UI to read
+  readonly logs = signal<string[]>([]);
+
+  // ✅ the live polling subscription lives here (not in a component)
+  private logSub?: Subscription;
 
   /** Start a scan for a tool (defaults to semgrep for backward compatibility) */
   startScan(input: string, tool: ToolKind): Observable<StartScanResponse> {
@@ -192,9 +210,51 @@ export class ScanService {
             this.http.get(a.resultUrl, { params }).subscribe({
               next: (res) => {
                 console.log(`[${tool}] ✅ Result Lambda response:`, res);
-                // (optional) normalize to your Finding[] later:
-                // const normalized = a.mapResultToFindings(res, { repo: this.scanSession()?.repo });
-                // console.log(`[${tool}] 🔎 Normalized findings:`, normalized);
+
+                // 1) Normalize to Finding[]
+                const ctx = {
+                  repo: this.scanSession()?.repo,
+                  createdAt: new Date().toISOString(),
+                };
+                let normalized: Finding[] = [];
+                if (tool === 'semgrep') {
+                  normalized = isSarif(res)
+                    ? mapSemgrepSarifToFindings(res, ctx)
+                    : a.mapResultToFindings(res, ctx);
+                } else {
+                  normalized = a.mapResultToFindings(res, ctx);
+                }
+
+                if (!normalized.length) {
+                  console.warn(`[${tool}] ℹ️ No findings after normalization.`);
+                } else {
+                  console.table(
+                    normalized.map((n) => ({
+                      tool: n.tool,
+                      sev: n.severity,
+                      rule: n.ruleId,
+                      file: n.location?.file,
+                      line: n.location?.line,
+                    }))
+                  );
+                  this.findingsStore.add(normalized);
+                }
+
+                // 2) Enrich with AI (explanations + remediation)
+                this.bedrock
+                  .enrichFindings(normalized)
+                  .then((enriched) => {
+                    console.log('🤖 Enriched findings:', enriched);
+                    // optional: persist enriched back to the store
+                    this.findingsStore.add(enriched);
+
+                    console.log(this.findingsStore.all());
+                  })
+                  .catch((e) => {
+                    console.error('❌ AI enrichment failed:', e);
+                  });
+
+                this.scanPhase.set('completed');
               },
               error: (err) =>
                 console.error(`[${tool}] ❌ Failed to fetch result:`, err),
@@ -203,6 +263,39 @@ export class ScanService {
         }
       })
     );
+  }
+
+  /** Start/replace polling and keep it alive even if components unmount */
+  startLogPolling(taskId: string, tool: ToolKind) {
+    // cancel previous if any
+    this.logSub?.unsubscribe();
+    this.logs.set(['Streaming logs...']);
+
+    this.logSub = this.streamLogs(taskId, tool).subscribe({
+      next: (lines) => {
+        if (!lines?.length) return;
+        this.logs.update((v) => v.concat(lines));
+      },
+      complete: () => {
+        this.scanPhase.set('completed');
+        this.logs.update((v) => [...v, 'Done.']);
+      },
+      error: (e) => {
+        this.scanPhase.set('error');
+        const msg = (
+          e?.error?.message ||
+          e?.message ||
+          'Log stream error'
+        ).toString();
+        this.logs.update((v) => [...v, `Log stream error: ${msg}`]);
+      },
+    });
+  }
+
+  /** Optional: stop polling manually (e.g., Rescan) */
+  stopLogPolling() {
+    this.logSub?.unsubscribe();
+    this.logSub = undefined;
   }
 
   /** Direct fetch if you already know the file name */

@@ -1,0 +1,168 @@
+@use "../../../styles/mixins.scss";
+
+.panel {
+  @include mixins.widget;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vuln-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 10px;
+
+  h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    .count {
+      opacity: 0.8;
+    }
+    .sort {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      select {
+        background: var(--panel-bg);
+        color: var(--fg);
+        border: 1px solid var(--border, #2a2a2a);
+        border-radius: 10px;
+        padding: 6px 8px;
+      }
+    }
+  }
+}
+
+.empty {
+  opacity: 0.8;
+  font-style: italic;
+  padding: 8px 2px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--panel-bg);
+
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    .rule {
+      opacity: 0.9;
+    }
+    .msg {
+      flex: 1 1 auto;
+    }
+  }
+
+  .loc {
+    margin-top: 6px;
+    opacity: 0.9;
+    .file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+  }
+
+  .snippet {
+    margin-top: 8px;
+    max-height: 180px;
+    overflow: auto;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--panel-bg-inverted);
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+  }
+
+  details.ai {
+    margin-top: 10px;
+
+    summary {
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.9;
+    }
+
+    .ai-block {
+      margin-top: 8px;
+      h4 {
+        margin: 0 0 4px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      p,
+      pre.remediation {
+        margin: 0;
+        background: var(--panel-bg);
+        border: 1px solid var(--border, #2a2a2a);
+        border-radius: 10px;
+        padding: 10px;
+        white-space: pre-wrap;
+      }
+    }
+  }
+}
+
+/* severity badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--panel-bg-inverted);
+  border: 1px solid var(--border, #2a2a2a);
+}
+.badge--crit {
+  background: #2b0b0b;
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.25);
+}
+.badge--high {
+  background: #2b140b;
+  color: #ffa94d;
+  border-color: rgba(255, 169, 77, 0.25);
+}
+.badge--med {
+  background: #1c2319;
+  color: #94d82d;
+  border-color: rgba(148, 216, 45, 0.25);
+}
+.badge--low {
+  background: #121a24;
+  color: #74c0fc;
+  border-color: rgba(116, 192, 252, 0.25);
+}
+.badge--info {
+  background: #101820;
+  color: #ced4da;
+  border-color: rgba(206, 212, 218, 0.25);
+}
