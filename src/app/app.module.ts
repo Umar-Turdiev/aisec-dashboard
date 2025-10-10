@@ -4,6 +4,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -36,6 +37,7 @@ import { CodeHighlightPipe } from './shared/code-highlight.pipe';
     HttpClientModule,
     MarkdownPipe,
     CodeHighlightPipe,
+    NgApexchartsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

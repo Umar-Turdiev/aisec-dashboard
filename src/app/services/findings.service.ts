@@ -99,6 +99,41 @@ export class FindingsService {
           '- Use hashlib.sha256 or scrypt/argon2 for passwords\n- Add per-user salt\n- Prefer a proper KDF (argon2, scrypt, PBKDF2)',
       },
       {
+        id: 'semgrep-002',
+        tool: 'semgrep',
+        ruleId: 'rules.agent-security.ai.llm.output.to.shell.python',
+        title: 'LLM output to shell',
+        message:
+          'LLM output flows into a shell command. Validate/whitelist or sandbox. (OWASP LLM02)',
+        severity: 'high',
+        location: {
+          file: 'repo/setup.py',
+          line: 32,
+          snippet: 'os.system("python setup.py sdist bdist_wheel")',
+        },
+        aiExplanation:
+          'Passing LLM output into a shell can allow command injection. Attackers could execute arbitrary commands.',
+        aiRemediation:
+          '- Replace os.system with subprocess.run(..., shell=False)\n- Use argument arrays instead of shell strings\n- Strictly validate/whitelist commands',
+      },
+      {
+        id: 'semgrep-003',
+        tool: 'semgrep',
+        ruleId: 'py.insecure.hash.md5',
+        title: 'MD5 used for hashing',
+        message: 'Insecure hash (MD5) used for security-sensitive context.',
+        severity: 'low',
+        location: {
+          file: 'repo/auth/utils.py',
+          line: 44,
+          snippet: 'h = hashlib.md5(password.encode()).hexdigest()',
+        },
+        aiExplanation:
+          'MD5 is broken and collision-prone. It should not be used for passwords or integrity checks.',
+        aiRemediation:
+          '- Use hashlib.sha256 or scrypt/argon2 for passwords\n- Add per-user salt\n- Prefer a proper KDF (argon2, scrypt, PBKDF2)',
+      },
+      {
         id: 'vanta-001',
         tool: 'vanta',
         ruleId: 'VANTA-AC-2',

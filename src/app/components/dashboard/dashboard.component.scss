@@ -16,6 +16,7 @@ section {
     height: 40px;
 
     h1 {
+      font-size: 20px;
       font-weight: 300;
       align-self: center;
     }
@@ -38,8 +39,8 @@ section {
 
   &__content {
     /* Debug Only */
-    background-color: lightyellow;
-    border-radius: 25px;
+    // background-color: lightyellow;
+    // border-radius: 25px;
     /* Debug Only */
 
     margin-top: 10px;
@@ -53,4 +54,24 @@ section {
 
 .wide {
   width: 595px !important;
+}
+
+/* ---- Semgrep donut (segmented ring) ---- */
+.semgrep-donut {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 4px auto;
+  animation: widgetPop 0.35s ease;
+}
+
+@keyframes widgetPop {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

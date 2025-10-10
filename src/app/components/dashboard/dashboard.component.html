@@ -6,7 +6,19 @@
         <i class="fa-solid fa-arrow-up"></i>
       </a>
     </div>
-    <div class="widget__content">Details...</div>
+    <div class="widget__content">
+      <apx-chart
+        [series]="severitySeries()"
+        [labels]="severityLabels"
+        [chart]="chart"
+        [theme]="theme"
+        [stroke]="stroke"
+        [responsive]="responsive"
+        [tooltip]="tooltip"
+        [dataLabels]="dataLabels"
+        [plotOptions]="plotOptions"
+      ></apx-chart>
+    </div>
   </div>
 
   <div class="widget">
